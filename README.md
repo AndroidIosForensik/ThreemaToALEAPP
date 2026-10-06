@@ -1,99 +1,103 @@
+**English** | [Deutsch](README.de.md)
+
 # ThreemaToALEAPP
 
-Wandelt eine **Threema-Datensicherung** (`threema-backup_<Zeitstempel>_1.zip`, passwortgeschützt) in eine Pseudo-Extraktion um, die [ALEAPP](https://github.com/abrignoni/ALEAPP) mit seinem Threema-Parser (`scripts/artifacts/Threema.py`) direkt einlesen kann.
+Converts a **Threema data backup** (`threema-backup_<timestamp>_1.zip`, password protected) into a pseudo extraction that [ALEAPP](https://github.com/abrignoni/ALEAPP) can read directly with its Threema parser (`scripts/artifacts/Threema.py`).
 
-Damit lassen sich Threema-Chats auswerten, auch wenn kein Dateisystem-Abbild des Android-Geräts vorliegt, sondern nur die in der App erstellte Datensicherung.
+This lets you analyse Threema chats even when no file system image of the Android device is available, only the backup created inside the app.
 
-> **Hinweis:** Die erzeugte `threema4.db` ist eine **Rekonstruktion** aus dem Backup und keine Originaldatei vom Gerät. Das ist im Bericht und in der Datenbank selbst (Tabelle `backup_conversion_info`) dokumentiert.
+> **Note:** The generated `threema4.db` is a **reconstruction** from the backup, not an original file from the device. This is documented in the report and in the database itself (table `backup_conversion_info`).
+
+> The user interface, log messages and output folder names of the tool are in German.
 
 ---
 
 ## Download
 
-Die fertige Windows-Version (keine Python-Installation nötig) gibt es unter **[Releases](../../releases/latest)**:
+A ready-to-use Windows build (no Python installation required) is available under **[Releases](../../releases/latest)**:
 
-- `ThreemaBackup_zu_ALEAPP.exe` – Doppelklick genügt, es öffnet sich ein Fenster.
+- `ThreemaBackup_zu_ALEAPP.exe` – just double-click it and a window opens.
 
-## Bedienung
+## Usage
 
-### Mit Fenster (Standard)
+### With the window (default)
 
-1. `ThreemaBackup_zu_ALEAPP.exe` starten (oder `python threema_backup_zu_aleapp.py`).
-2. Threema-Backup-ZIP wählen.
-3. Passwort der Datensicherung eingeben.
-4. Ausgabeordner wählen (leer = `ALEAPP_Threema_Export` neben dem Backup).
-5. **Konvertieren für ALEAPP** klicken.
+1. Start `ThreemaBackup_zu_ALEAPP.exe` (or `python threema_backup_zu_aleapp.py`).
+2. Select the Threema backup ZIP (*Threema-Backup (ZIP)*).
+3. Enter the backup password (*Passwort*).
+4. Select an output folder (*Ausgabeordner*; empty = `ALEAPP_Threema_Export` next to the backup).
+5. Click **Konvertieren für ALEAPP** (convert for ALEAPP).
 
-### Kommandozeile
-
-```bash
-python threema_backup_zu_aleapp.py threema-backup_1790790557634_1.zip "Passwort" C:\Auswertung\Threema
-```
-
-oder mit benannten Parametern:
+### Command line
 
 ```bash
-python threema_backup_zu_aleapp.py threema-backup_1790790557634_1.zip --passwort "Passwort" --out C:\Auswertung\Threema
+python threema_backup_zu_aleapp.py threema-backup_1790790557634_1.zip "password" C:\Cases\Threema
 ```
 
-| Parameter | Bedeutung |
+or with named parameters:
+
+```bash
+python threema_backup_zu_aleapp.py threema-backup_1790790557634_1.zip --password "password" --out C:\Cases\Threema
+```
+
+| Parameter | Meaning |
 |---|---|
-| `backup` | Pfad zur Threema-Backup-ZIP |
-| `passwort` / `--passwort` / `--password` | Passwort der Datensicherung |
-| `ausgabe` / `--out` | Ausgabeordner |
-| `--nogui` | kein Fenster; fehlende Angaben werden in der Konsole abgefragt (Passwort unsichtbar) |
+| `backup` | Path to the Threema backup ZIP |
+| `passwort` / `--password` / `--passwort` | Backup password |
+| `ausgabe` / `--out` | Output folder |
+| `--nogui` | No window; missing values are prompted in the console (password hidden) |
 
-Alternativ können `PASSWORT`, `BACKUP_DATEI` und `AUSGABE_ORDNER` oben im Skript eingetragen werden.
+Alternatively, `PASSWORT`, `BACKUP_DATEI` and `AUSGABE_ORDNER` can be filled in at the top of the script.
 
 ### In ALEAPP
 
-ALEAPP starten, als Eingabe `ALEAPP_Threema.zip` wählen (Typ **zip**) und den Threema-Parser ausführen. ALEAPP benötigt dafür das Python-Paket `sqlcipher3`.
+Start ALEAPP, select `ALEAPP_Threema.zip` as input (type **zip**) and run the Threema parser. ALEAPP needs the Python package `sqlcipher3` for this.
 
-## Ausgabe
+## Output
 
 ```
-<Ausgabeordner>/
-├── ALEAPP_Threema.zip                ← Eingabe für ALEAPP
+<output folder>/
+├── ALEAPP_Threema.zip                ← input for ALEAPP
 │   └── data/data/ch.threema.app/
-│       ├── databases/threema4.db                         (SQLCipher 4, wie auf dem Gerät)
-│       ├── files/key.dat                                 (Schlüsseldatei, Version 1, ohne Passphrase)
-│       └── shared_prefs/ch.threema.app_preferences.xml   (eigene Threema-ID)
-├── backup_entschluesselt/            ← alle Dateien des Backups im Klartext (CSVs, Medien, Avatare)
-├── medien/                           ← Mediendateien mit erkannter Endung, nach Chat sortiert
-└── report.txt                        ← Konvertierungsbericht mit SHA-256-Hashwerten und Statistik
+│       ├── databases/threema4.db                         (SQLCipher 4, as on the device)
+│       ├── files/key.dat                                 (key file, version 1, no passphrase)
+│       └── shared_prefs/ch.threema.app_preferences.xml   (own Threema ID)
+├── backup_entschluesselt/            ← all backup files in plain text (CSVs, media, avatars)
+├── medien/                           ← media files with detected extension, sorted by chat
+└── report.txt                        ← conversion report with SHA-256 hashes and statistics
 ```
 
-## Was wird übernommen?
+## What is converted?
 
-| Inhalt | in `threema4.db` | von ALEAPP angezeigt |
+| Content | in `threema4.db` | shown by ALEAPP |
 |---|---|---|
-| Eigene Threema-ID und Public Key | ✔ | ✔ (Account) |
-| Kontakte | ✔ | ✔ |
-| Einzelchats | ✔ | ✔ |
-| Gruppen und Gruppennachrichten | ✔ (`m_group`, `m_group_message`) | ✘ (Stand Sept. 2026) |
-| Verteilerlisten und Nachrichten | ✔ (`distribution_list*`) | ✘ |
-| Emoji-Reaktionen | ✔ (`*_emoji_reaction`) | ✘ |
-| Medien, Thumbnails, Avatare | – | ✘ → liegen unter `medien/` |
+| Own Threema ID and public key | ✔ | ✔ (account) |
+| Contacts | ✔ | ✔ |
+| One-to-one chats | ✔ | ✔ |
+| Groups and group messages | ✔ (`m_group`, `m_group_message`) | ✘ (as of Sept. 2026) |
+| Distribution lists and messages | ✔ (`distribution_list*`) | ✘ |
+| Emoji reactions | ✔ (`*_emoji_reaction`) | ✘ |
+| Media, thumbnails, avatars | – | ✘ → stored under `medien/` |
 
-Was ALEAPP nicht anzeigt, steht trotzdem in der Datenbank und im Klartext unter `backup_entschluesselt/`.
+Anything ALEAPP does not display is still in the database and in plain text under `backup_entschluesselt/`.
 
-## Technischer Hintergrund
+## Technical background
 
-- **Backup-ZIP:** WinZip-AES (AE-1/AE-2, PBKDF2-SHA1) bzw. ZipCrypto wird selbst entschlüsselt, inklusive HMAC-Prüfung jedes Eintrags.
-- **ID-Backup (`identity`):** Base32 → PBKDF2-SHA256 (100 000 Iterationen) → XSalsa20; daraus werden Threema-ID und Public Key abgeleitet. Der **private Schlüssel wird nicht exportiert**.
-- **Datenbank:** Schema mit Tabellen und Spalten wie in Threema-Android (`ch.threema.storage.factories`). Die Datenbank wird wie von Threema verschlüsselt: SQLCipher 4, Passphrase als String `x"<hex>"`, `kdf_iter = 1`, HMAC-SHA512, 4096-Byte-Seiten. Nach der Verschlüsselung wird jede Seite gegengeprüft.
-- **key.dat:** Version 1 ohne Passphrase (XOR-Maske + SHA-1-Prüfsumme), so wie ALEAPP sie erwartet. Der Datenbankschlüssel wird bei jedem Lauf zufällig neu erzeugt.
+- **Backup ZIP:** WinZip AES (AE-1/AE-2, PBKDF2-SHA1) or ZipCrypto is decrypted by the tool itself, including the HMAC check of every entry.
+- **ID backup (`identity`):** Base32 → PBKDF2-SHA256 (100,000 iterations) → XSalsa20; the Threema ID and public key are derived from it. The **private key is not exported**.
+- **Database:** schema with tables and columns as in Threema Android (`ch.threema.storage.factories`). The database is encrypted the same way Threema does it: SQLCipher 4, passphrase as the string `x"<hex>"`, `kdf_iter = 1`, HMAC-SHA512, 4096-byte pages. Every page is verified after encryption.
+- **key.dat:** version 1 without passphrase (XOR mask + SHA-1 checksum), as expected by ALEAPP. The database key is randomly generated on every run.
 
-## Forensische Hinweise
+## Forensic notes
 
-- `threema4.db` ist eine Rekonstruktion, keine Gerätedatei. Der Schlüssel in `key.dat` ist nicht der des Originalgeräts.
-- Die Hashwerte von Quelle, ALEAPP-ZIP, Datenbank und allen Mediendateien stehen in `report.txt`.
-- Nicht im Backup enthalten (und daher auch nicht in der Ausgabe): Datum „Date Added“ der Kontakte, Nickname und Telefonnummer des Kontoinhabers sowie Nachrichten, die vor der Sicherung gelöscht wurden.
-- Der Backup-Zeitpunkt wird aus dem Dateinamen gelesen und in der lokalen Zeit des auswertenden Rechners angegeben.
+- `threema4.db` is a reconstruction, not a device file. The key in `key.dat` is not the one from the original device.
+- Hashes of the source, the ALEAPP ZIP, the database and all media files are listed in `report.txt`.
+- Not contained in the backup (and therefore not in the output): the contacts' "Date Added", the account owner's nickname and phone number, and messages deleted before the backup was made.
+- The backup time is taken from the file name and shown in the local time of the analysing computer.
 
-## Aus dem Quellcode ausführen / selbst bauen
+## Run from source / build it yourself
 
-Voraussetzung: Python 3.9 oder neuer.
+Requirement: Python 3.9 or newer.
 
 ```bash
 pip install -r requirements.txt
@@ -103,7 +107,7 @@ pip install -r requirements.txt
 python threema_backup_zu_aleapp.py
 ```
 
-Eigene Windows-Exe bauen:
+Build your own Windows exe:
 
 ```bash
 pip install pyinstaller
@@ -113,8 +117,8 @@ pip install pyinstaller
 pyinstaller --onefile --name ThreemaBackup_zu_ALEAPP threema_backup_zu_aleapp.py
 ```
 
-Die Exe liegt danach unter `dist/`.
+The exe is then located in `dist/`.
 
-## Lizenz
+## License
 
-[MIT](LICENSE) – das Tool darf frei verwendet, verändert und weitergegeben werden (auch dienstlich und kommerziell), solange der Lizenzhinweis erhalten bleibt. Nutzung ohne Gewähr.
+[MIT](LICENSE) – the tool may be freely used, modified and redistributed (including for official and commercial purposes) as long as the license notice is retained. Provided without warranty.
