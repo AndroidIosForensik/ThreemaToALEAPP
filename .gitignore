@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# PyInstaller
+build/
+dist/
+*.spec
+
+# Binaries gehören in Releases, nicht ins Repo
+*.exe
+
+# Ausgaben und Backups (können personenbezogene Daten enthalten)
+ALEAPP_Threema_Export/
+threema-backup_*.zip
+ALEAPP_Threema.zip
